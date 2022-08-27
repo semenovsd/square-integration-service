@@ -19,7 +19,7 @@ async def get_auth_link(
     square_interface = request.app.state.square_interface
     settings = request.app.state.settings
     client_id = settings.SQUARE.APPLICATION_ID
-    auth_url = await square_interface.get_oauth_authorize(client_id=client_id)
+    auth_url = await square_interface.get_authorize_link(client_id=client_id)
     data = {'auth_url': auth_url}
     return data
 

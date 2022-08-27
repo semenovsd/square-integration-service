@@ -57,7 +57,7 @@ class SquareInterface:
         await cls._session.close()
 
     @classmethod
-    async def get_oauth_authorize(
+    async def get_authorize_link(
             cls,
             client_id: str,
             scope: str = 'CUSTOMERS_WRITE CUSTOMERS_READ',
