@@ -12,6 +12,11 @@ class BaseAppSettings(BaseSettings):
         env_file = '../.env' if os.environ.get('ENV_STAGE') is None else None  # Export env vars for local deployment
 
 
+class SquareConfig(BaseAppSettings):
+    APPLICATION_ID: str
+    APPLICATION_SECRET: str
+
+
 class Settings(BaseAppSettings):
     ENV_STAGE: str
     DEBUG: bool = False
@@ -32,6 +37,9 @@ class Settings(BaseAppSettings):
         elif isinstance(v, (list, str)):
             return v
         raise ValueError(v)
+
+    # FireBase settings
+    SQUARE: SquareConfig = SquareConfig()
 
 
 def get_settings() -> Settings:

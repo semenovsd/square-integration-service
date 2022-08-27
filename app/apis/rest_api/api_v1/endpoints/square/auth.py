@@ -14,26 +14,35 @@ router = APIRouter()
 @router.get("/oauth2/auth-url")
 async def get_auth_link(
         request: Request,
-        client_id: str = Query(..., description='client_id. The ID that is associated with an application using the '
-                                                'OAuth process. This is a public variable and is called the '
-                                                'Application ID in the Developer Dashboard on the OAuth page.')
 ) -> Any:
     """Method for receive auth url for Seller."""
     square_interface = request.app.state.square_interface
+    settings = request.app.state.settings
+    client_id = settings.SQUARE.APPLICATION_ID
     auth_url = await square_interface.get_oauth_authorize(client_id=client_id)
     data = {'auth_url': auth_url}
     return data
 
 
-@router.post("/oauth2/obtain-token")
+@router.get("/oauth2/callback")
 async def obtain_token(
         request: Request,
-        client_id: str = Body(...),
-        client_secret: str = Body(...),
-        code: str = Body(...),
+        code: str = Query(..., description='authorization code'),
 ) -> Any:
-    """Method for receive auth url for Seller."""
+    """Provide the code in a request to the Obtain Token endpoint."""
+    settings = request.app.state.settings
     square_interface = request.app.state.square_interface
-    auth_url = await square_interface.get_oauth_authorize(client_id=client_id)
-    data = {'auth_url': auth_url}
+    data = await square_interface.obtain_token(
+        client_id=settings.SQUARE.APPLICATION_ID,
+        client_secret=settings.SQUARE.APPLICATION_SECRET,
+        code=code,
+        grant_type='authorization_code'
+    )
+    # {
+    #   "access_token": "ACCESS_TOKEN",
+    #   "token_type": "bearer",
+    #   "expires_at": "2006-01-02T15:04:05Z",
+    #   "merchant_id": "MERCHANT_ID",
+    #   "refresh_token": "REFRESH_TOKEN"
+    # }
     return data

@@ -12,7 +12,8 @@ ResponseType = TypeVar('ResponseType', dict, ClientResponse)
 
 @final
 class SquareInterface:
-    _BASE_API_URL: Final[str] = 'https://connect.squareup.com'
+    # https://developer.squareup.com/docs/devtools/sandbox/overview
+    _BASE_API_URL: Final[str] = 'https://connect.squareupsandbox.com'  # prod: https://connect.squareup.com
     _session: ClientSession = None
     _correct_response_statuses: Tuple[int] = (200, 201)
 
@@ -63,23 +64,25 @@ class SquareInterface:
             locale: str = 'en-US',
             session: bool = False,
             state: str = '82201dd8d83d23cc8a48caf52b',
+            **kwargs
     ) -> str | None:
+        """Generate auth link."""
         # https://developer.squareup.com/docs/oauth-api/create-urls-for-square-authorization
-        method = 'GET'
         request_url = cls._BASE_API_URL + '/oauth2/authorize'
         params = dict(
             client_id=client_id,
             scope=scope,
             session=str(session),
             state=state,
-            locale=locale
+            locale=locale,
+            **kwargs
         )
-        response = await cls._request(method=method, request_url=request_url, params=params)
-        if isinstance(response, ClientResponse):
-            return str(response.url)
+        query_params = ''.join(f'{arg}={params[arg]}&' for arg in params)
+        request_url = request_url + f'?{query_params}'
+        return request_url
 
     @classmethod
-    async def post_obtain_token(
+    async def obtain_token(
             cls,
             client_id: str,
             client_secret: str,
@@ -89,7 +92,7 @@ class SquareInterface:
         # https://developer.squareup.com/docs/oauth-api/create-urls-for-square-authorization
         method = 'POST'
         request_url = cls._BASE_API_URL + '/oauth2/token'
-        headers = {'Content-Type: application/json'}
+        headers = {'Content-Type': 'application/json', 'Square-Version': '2022-08-23'}
         payload = dict(
             client_id=client_id,
             client_secret=client_secret,
